@@ -147,7 +147,9 @@
                         <children>
                           <component id="81a5b" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
                             <constraints/>
-                            <properties/>
+                            <properties>
+                              <editable value="false"/>
+                            </properties>
                           </component>
                         </children>
                       </scrollpane>
@@ -159,7 +161,7 @@
           </grid>
         </children>
       </grid>
-      <toolbar id="f7f4f">
+      <toolbar id="f7f4f" binding="mainToolBar">
         <constraints border-constraint="North"/>
         <properties>
           <borderPainted value="true"/>
@@ -186,15 +188,16 @@
               <toolTipText value="Воспроизвести музыку / Поставить музыку на паузу"/>
             </properties>
           </component>
-          <component id="97aaf" class="javax.swing.JButton" binding="button3" default-binding="true">
+          <component id="97aaf" class="javax.swing.JButton" binding="stopButton">
             <constraints/>
             <properties>
+              <enabled value="false"/>
               <horizontalTextPosition value="2"/>
               <text value="■"/>
               <toolTipText value="Остановить музыку"/>
             </properties>
           </component>
-          <component id="1a854" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+          <component id="1a854" class="javax.swing.JComboBox" binding="musicComboBox">
             <constraints/>
             <properties>
               <model>
@@ -203,9 +206,17 @@
               <toolTipText value="Выбрать музыку"/>
             </properties>
           </component>
-          <component id="29dcf" class="javax.swing.JSlider" binding="slider1" default-binding="true">
+          <component id="29dcf" class="javax.swing.JSlider" binding="musicSlider">
             <constraints/>
-            <properties/>
+            <properties>
+              <enabled value="true"/>
+              <paintLabels value="false"/>
+              <paintTicks value="true"/>
+              <snapToTicks value="true"/>
+              <value value="0"/>
+              <valueIsAdjusting value="false"/>
+              <visible value="false"/>
+            </properties>
           </component>
           <component id="1572" class="javax.swing.JToolBar$Separator">
             <constraints/>
@@ -226,6 +237,7 @@
           <component id="22c11" class="javax.swing.JButton" binding="fullBackgroundButton">
             <constraints/>
             <properties>
+              <enabled value="false"/>
               <text value="■"/>
             </properties>
           </component>
@@ -266,13 +278,32 @@
               <text value="→"/>
             </properties>
           </component>
+          <toolbar id="c140e" binding="closeToolBar">
+            <constraints/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="51d80" class="javax.swing.JButton" binding="закрытьButton" default-binding="true">
+                <constraints/>
+                <properties>
+                  <horizontalAlignment value="0"/>
+                  <horizontalTextPosition value="4"/>
+                  <text value="Закрыть"/>
+                  <verticalAlignment value="0"/>
+                  <verticalTextPosition value="0"/>
+                  <visible value="false"/>
+                </properties>
+              </component>
+            </children>
+          </toolbar>
         </children>
       </toolbar>
-      <toolbar id="e8853">
+      <toolbar id="e8853" binding="bottomToolBar">
         <constraints border-constraint="South"/>
         <properties>
-          <borderPainted value="false"/>
+          <borderPainted value="true"/>
           <floatable value="false"/>
+          <inheritsPopupMenu value="true"/>
         </properties>
         <border type="none"/>
         <children>
@@ -288,10 +319,6 @@
               <toolTipText value="Отношение общего количества вопросов к отвеченным"/>
             </properties>
           </component>
-          <component id="288cb" class="javax.swing.JToolBar$Separator">
-            <constraints/>
-            <properties/>
-          </component>
           <component id="308ce" class="javax.swing.JToolBar$Separator">
             <constraints/>
             <properties/>
@@ -299,10 +326,10 @@
           <component id="a7bb6" class="javax.swing.JLabel">
             <constraints/>
             <properties>
-              <text value="От начала: "/>
+              <text value="Время"/>
             </properties>
           </component>
-          <component id="5efe8" class="javax.swing.JLabel">
+          <component id="5efe8" class="javax.swing.JLabel" binding="timeLabel">
             <constraints/>
             <properties>
               <text value="[ВРЕМЯ]"/>
@@ -318,7 +345,7 @@
               <text value="Действие: "/>
             </properties>
           </component>
-          <component id="57437" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+          <component id="5f5b2" class="javax.swing.JTextField" binding="textField1" default-binding="true">
             <constraints/>
             <properties/>
           </component>
@@ -334,7 +361,9 @@
           </component>
           <component id="14007" class="javax.swing.JTextField" binding="textField2" default-binding="true">
             <constraints/>
-            <properties/>
+            <properties>
+              <editable value="false"/>
+            </properties>
           </component>
           <component id="7b895" class="javax.swing.JButton" binding="показатьButton" default-binding="true">
             <constraints/>
