@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "rawtypes"})
 public class Viewer extends JFrame {
     private JPanel panel1;
     private JPanel mainPanel;
@@ -36,10 +36,6 @@ public class Viewer extends JFrame {
     private JButton fullBackgroundButton;
     private JLabel team1PointsLabel;
     private JLabel team2PointsLabel;
-    private JLabel team1NameLabel;
-    private JLabel team2NameLabel;
-    private JLabel team1LogoLabel;
-    private JLabel team2LogoLabel;
     private JLabel backgroundLabel;
     private JPanel backgroundPanel;
     private JButton stopButton;
@@ -64,9 +60,10 @@ public class Viewer extends JFrame {
     private JMenuItem removeFromTeam1Item = new JMenuItem("Удалить балл");
     private JMenu addSomethingMenu = new JMenu("Добавить ресурс...");
     private JMenuItem addBackgroundMenuItem = new JMenuItem("Добавить фон");
-    private JButton закрытьButton;
+    int teamLength = 5;
     private JToolBar closeToolBar;
     private JToolBar bottomToolBar;
+    JPanel[] teamsPanel = new JPanel[teamLength];
     private JMenu timeMenu = new JMenu("Время...");
     private JMenuItem continueMenuItem = new JMenuItem("Продолжить");
     private JMenuItem pauseMenuItem = new JMenuItem("Пауза");
@@ -80,7 +77,8 @@ public class Viewer extends JFrame {
     private JMenuItem exitItem = new JMenuItem("Выйти");
     private int workingMinutes = 0;
     private int workingSeconds = 0;
-
+    private JButton closeButton;
+    private JPanel teamPanel;
 
     public Viewer() {
         setUI();
@@ -145,6 +143,15 @@ public class Viewer extends JFrame {
             }
         });
 
+        this.teamPanel.setLayout(new GridLayout());
+
+        for (int i = 0; i < teamLength; i++) {
+            this.teamsPanel[i] = new JPanel();
+            this.teamPanel.add(this.teamsPanel[i]);
+            this.teamsPanel[i].setBorder(BorderFactory.createBevelBorder(1));
+            this.teamsPanel[i].add(new JLabel("" + (i + 1)));
+        }
+
         this.exitItem.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(this, "Вы уверены, что хотите выйти?", "Подтвердите", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.YES_NO_OPTION) {
@@ -190,6 +197,8 @@ public class Viewer extends JFrame {
 
         });
 
+//        System.out.println(new Question().returnQuestions());
+
         this.setBackgroundButton.addActionListener(e -> {
             try {
                 backgroundLabel.setIcon(returnBackgroundGIF(new URL("http://komotoz.ru/gifki/images/gifki_novyj_god/elka.gif")));
@@ -207,14 +216,6 @@ public class Viewer extends JFrame {
             }
         });
 
-
-//        assert false;
-//        audioIn[0] = AudioSystem.getAudioInputStream(new File("/home/artyom/Загрузки/audio.wav"));
-//        assert false;
-//        clip[0] = AudioSystem.getClip();
-//        clip[0].open(audioIn[0]);
-//        clip[0].start();
-//        this.stopButton.setEnabled(true);
 
         this.playButton.addActionListener(e -> {
             if (clip[0] == null) {
