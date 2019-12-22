@@ -203,17 +203,15 @@
               <text value="Управление коммандами: "/>
             </properties>
           </component>
-          <component id="1c51" class="javax.swing.JButton" binding="a1Button" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="✔ 1"/>
-            </properties>
-          </component>
           <component id="1fa14" class="javax.swing.JButton" binding="a2Button" default-binding="true">
             <constraints/>
             <properties>
-              <text value="✔ 2"/>
+              <text value="✔"/>
             </properties>
+          </component>
+          <component id="920e6" class="javax.swing.JComboBox" binding="teamComboBox">
+            <constraints/>
+            <properties/>
           </component>
           <component id="e461f" class="javax.swing.JButton" binding="следующийВопросButton" default-binding="true">
             <constraints/>

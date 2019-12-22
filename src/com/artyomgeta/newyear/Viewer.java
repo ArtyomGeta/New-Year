@@ -1,9 +1,15 @@
 package com.artyomgeta.newyear;
 
+import org.json.JSONArray;
+
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-@SuppressWarnings({"unused", "rawtypes"})
+@SuppressWarnings({"unused", "rawtypes", "NonAsciiCharacters", "DuplicatedCode"})
 public class Viewer extends JFrame {
     private JPanel panel1;
     private JPanel mainPanel;
@@ -48,8 +54,7 @@ public class Viewer extends JFrame {
     private JMenu fileMenu = new JMenu("Файл");
     private JMenu teamMenu = new JMenu("Комманды");
     private JMenu actionMenu = new JMenu("Действие");
-    private JMenu team1Menu = new JMenu("Комманда 1");
-    private JMenu team2Menu = new JMenu("Комманда 2");
+    int[] teamPoints;
     private JMenuItem changeURLTeam1Item = new JMenuItem("Изменить ссылки");
     private JMenuItem changeURLTeam2Item = new JMenuItem("Изменить ссылки");
     private JMenuItem watchInfoTeam2Item = new JMenuItem("Посмотреть информацию");
@@ -61,6 +66,8 @@ public class Viewer extends JFrame {
     private JMenu addSomethingMenu = new JMenu("Добавить ресурс...");
     private JMenuItem addBackgroundMenuItem = new JMenuItem("Добавить фон");
     int teamLength = 5;
+    int questionLength = returnQuestionsLength();
+    private JMenu team1Menu = new JMenu("Комманда");
     private JToolBar closeToolBar;
     private JToolBar bottomToolBar;
     JPanel[] teamsPanel = new JPanel[teamLength];
@@ -71,14 +78,13 @@ public class Viewer extends JFrame {
     private JMenuItem setToolBarInvisibleItem = new JMenuItem("Скрыть меню");
     private JMenuItem setFullScreenItem = new JMenuItem("Растянуть на весь экран");
     private JMenuItem setBottomToolBarInvisible = new JMenuItem("Скрыть меню статуса");
-
-    private short team1_points = 0;
-    private short team2_points = 0;
+    private short[] team_points = {0};
     private JMenuItem exitItem = new JMenuItem("Выйти");
     private int workingMinutes = 0;
     private int workingSeconds = 0;
     private JButton closeButton;
     private JPanel teamPanel;
+    private JComboBox teamComboBox;
 
     public Viewer() {
         setUI();
@@ -95,30 +101,28 @@ public class Viewer extends JFrame {
     private void setUI() {
         leftPanel.setPreferredSize(new Dimension(Toolkit.getDefaultToolkit().getScreenSize().width / 5, 20));
 
+        System.out.println(returnQuestionsLength());
+        System.out.println(returnTeamsLength());
+        //this.teamLength = returnTeamsLength();
+
         this.setJMenuBar(menuBar);
         this.menuBar.add(this.fileMenu);
         this.menuBar.add(this.teamMenu);
         this.menuBar.add(this.actionMenu);
 
         this.teamMenu.add(this.team1Menu);
-        this.teamMenu.add(this.team2Menu);
 
         this.team1Menu.add(this.addToTeam1Item);
         this.team1Menu.add(this.removeFromTeam1Item);
         this.team1Menu.add(this.watchInfoTeam1Item);
         this.team1Menu.add(this.changeURLTeam1Item);
 
-        this.team2Menu.add(this.addToTeam2Item);
-        this.team2Menu.add(this.removeFromTeam2Item);
-        this.team2Menu.add(this.watchInfoTeam2Item);
-        this.team2Menu.add(this.changeURLTeam2Item);
 
-        this.a1Button.addActionListener(e -> addPoint(1));
-        this.a2Button.addActionListener(e -> addPoint(2));
-        this.removeFromTeam1Item.addActionListener(e -> removePoint(1));
-        this.addToTeam1Item.addActionListener(e -> addPoint(1));
-        this.addToTeam2Item.addActionListener(e -> addPoint(2));
-        this.removeFromTeam2Item.addActionListener(e -> removePoint(2));
+        this.a2Button.addActionListener(e -> System.out.println(e.getActionCommand()));
+        this.removeFromTeam1Item.addActionListener(e -> System.out.println(e.getActionCommand()));
+        this.addToTeam1Item.addActionListener(e -> System.out.println(e.getActionCommand()));
+        this.addToTeam2Item.addActionListener(e -> System.out.println(e.getActionCommand()));
+        this.removeFromTeam2Item.addActionListener(e -> System.out.println(e.getActionCommand()));
 
         this.actionMenu.add(this.addSomethingMenu);
         this.addSomethingMenu.add(this.addBackgroundMenuItem);
@@ -126,6 +130,11 @@ public class Viewer extends JFrame {
         this.actionMenu.add(this.timeMenu);
         this.timeMenu.add(this.continueMenuItem);
         this.timeMenu.add(this.pauseMenuItem);
+
+        for (int i = 0; i < questionLength; i++) {
+
+            //team1Menu
+        }
 
         this.fileMenu.add(this.viewMenu);
         this.viewMenu.add(this.setToolBarInvisibleItem);
@@ -150,6 +159,23 @@ public class Viewer extends JFrame {
             this.teamPanel.add(this.teamsPanel[i]);
             this.teamsPanel[i].setBorder(BorderFactory.createBevelBorder(1));
             this.teamsPanel[i].add(new JLabel("" + (i + 1)));
+
+            int finalI = i;
+            this.teamsPanel[i].addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.BLUE));
+                }
+
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    teamsPanel[finalI].setBorder(BorderFactory.createBevelBorder(1));
+                }
+            });
+            this.teamsPanel[i].addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                }
+            });
         }
 
         this.exitItem.addActionListener(e -> {
@@ -193,12 +219,6 @@ public class Viewer extends JFrame {
         int millisInAMinute = 60000;
         long time = System.currentTimeMillis();
 
-        this.continueMenuItem.addActionListener(e -> {
-
-        });
-
-//        System.out.println(new Question().returnQuestions());
-
         this.setBackgroundButton.addActionListener(e -> {
             try {
                 backgroundLabel.setIcon(returnBackgroundGIF(new URL("http://komotoz.ru/gifki/images/gifki_novyj_god/elka.gif")));
@@ -239,9 +259,7 @@ public class Viewer extends JFrame {
                     this.stopButton.setEnabled(true);
                 }
             }
-            clip[0].addLineListener(event -> {
-                updateState();
-            });
+            clip[0].addLineListener(event -> updateState());
         });
 
         this.stopButton.addActionListener(e -> {
@@ -259,15 +277,7 @@ public class Viewer extends JFrame {
         musicSlider.setValue(progress);
     }
 
-    private void addPoint(int team) {
-        if (team == 1) {
-            team1_points++;
-            team1PointsLabel.setText(String.valueOf(team1_points));
-        } else {
-            team2_points++;
-            team2PointsLabel.setText(String.valueOf(team2_points));
-        }
-    }
+
 
     public ImageIcon returnBackgroundImage(URL url) {
         //URL url = new URL("http://komotoz.ru/gifki/images/gifki_novyj_god/elka.gif");
@@ -282,7 +292,6 @@ public class Viewer extends JFrame {
                 (int) ((float) imageIcon.getIconWidth() * k),
                 (int) ((float) imageIcon.getIconHeight() * k),
                 Image.SCALE_SMOOTH);
-        imageIcon = new ImageIcon(newImage);
         imageIcon = new ImageIcon(image);
         System.out.println(imageIcon.getIconWidth());
         System.out.println(imageIcon.getIconHeight());
@@ -300,43 +309,51 @@ public class Viewer extends JFrame {
         return imageIcon;
     }
 
-    private void addPoint(short team, int value) {
-        if (team == 1) {
-            team1_points += value;
-            team1PointsLabel.setText(String.valueOf(team1_points));
-        } else {
-            team2_points += value;
-            team2PointsLabel.setText(String.valueOf(team2_points));
-        }
-    }
-
-    private void removePoint(int team) {
-        if (team == 1) {
-            team1_points--;
-            team1PointsLabel.setText(String.valueOf(team1_points));
-        } else {
-            team2_points--;
-            team2PointsLabel.setText(String.valueOf(team2_points));
-        }
-    }
-
-    private void removePoint(short team, int value) {
-        if (team == 1) {
-            team1_points -= value;
-            team1PointsLabel.setText(String.valueOf(team1_points));
-        } else {
-            team2_points -= value;
-            team2PointsLabel.setText(String.valueOf(team2_points));
-        }
-    }
 
     private String returnCurrentAudio(String current) {
         String returnable = null;
-        switch (current) {
-            case "Тестовая музыка":
-                returnable = "/home/artyom/Загрузки/audio.wav";
+        if ("Тестовая музыка".equals(current)) {
+            returnable = "/home/artyom/Загрузки/audio.wav";
         }
         return returnable;
+    }
+
+    private int returnQuestionsLength() {
+        StringBuilder sb = new StringBuilder();
+        int length = 0;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("/home/artyom/Документы/Вопросы.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            length = jsonArray.length();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return length;
+    }
+
+    private int returnTeamsLength() {
+        StringBuilder sb = new StringBuilder();
+        int length = 0;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("/home/artyom/Документы/Комманды.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            length = jsonArray.length();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return length;
     }
 
 }
