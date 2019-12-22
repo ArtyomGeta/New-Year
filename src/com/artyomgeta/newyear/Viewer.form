@@ -203,7 +203,7 @@
               <text value="Управление коммандами: "/>
             </properties>
           </component>
-          <component id="1fa14" class="javax.swing.JButton" binding="a2Button" default-binding="true">
+          <component id="76fdb" class="javax.swing.JButton" binding="addPointButton">
             <constraints/>
             <properties>
               <text value="✔"/>

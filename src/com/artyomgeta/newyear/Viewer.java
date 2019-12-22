@@ -1,6 +1,7 @@
 package com.artyomgeta.newyear;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -34,14 +35,12 @@ public class Viewer extends JFrame {
     private JButton setBackgroundButton;
     private JComboBox comboBox2;
     private JButton a1Button;
-    private JButton a2Button;
     private JButton следующийВопросButton;
     private JTextField textField2;
     private JButton показатьButton;
     private JTextArea textArea1;
     private JButton fullBackgroundButton;
-    private JLabel team1PointsLabel;
-    private JLabel team2PointsLabel;
+    int teamLength = returnTeamsLength();
     private JLabel backgroundLabel;
     private JPanel backgroundPanel;
     private JButton stopButton;
@@ -54,23 +53,19 @@ public class Viewer extends JFrame {
     private JMenu fileMenu = new JMenu("Файл");
     private JMenu teamMenu = new JMenu("Комманды");
     private JMenu actionMenu = new JMenu("Действие");
-    int[] teamPoints;
-    private JMenuItem changeURLTeam1Item = new JMenuItem("Изменить ссылки");
-    private JMenuItem changeURLTeam2Item = new JMenuItem("Изменить ссылки");
-    private JMenuItem watchInfoTeam2Item = new JMenuItem("Посмотреть информацию");
-    private JMenuItem watchInfoTeam1Item = new JMenuItem("Посмотреть информацию");
-    private JMenuItem addToTeam1Item = new JMenuItem("Добавить балл");
-    private JMenuItem addToTeam2Item = new JMenuItem("Добавить балл");
-    private JMenuItem removeFromTeam2Item = new JMenuItem("Удалить балл");
-    private JMenuItem removeFromTeam1Item = new JMenuItem("Удалить балл");
+    int[] teamPoints = new int[returnTeamsLength()];
+    private JLabel[] teamPointsLabel;
+    private JMenuItem changeURLTeamItem = new JMenuItem("Изменить ссылки");
+    private JMenuItem watchInfoTeamItem = new JMenuItem("Посмотреть информацию");
     private JMenu addSomethingMenu = new JMenu("Добавить ресурс...");
     private JMenuItem addBackgroundMenuItem = new JMenuItem("Добавить фон");
-    int teamLength = 5;
+    private JMenuItem addToTeamItem = new JMenuItem("Добавить балл");
     int questionLength = returnQuestionsLength();
-    private JMenu team1Menu = new JMenu("Комманда");
+    private JMenuItem removeFromTeamItem = new JMenuItem("Удалить балл");
+    private JMenu[] teamsMenu = new JMenu[returnTeamsLength()];
     private JToolBar closeToolBar;
     private JToolBar bottomToolBar;
-    JPanel[] teamsPanel = new JPanel[teamLength];
+    private JPanel[] teamsPanel = new JPanel[teamLength];
     private JMenu timeMenu = new JMenu("Время...");
     private JMenuItem continueMenuItem = new JMenuItem("Продолжить");
     private JMenuItem pauseMenuItem = new JMenuItem("Пауза");
@@ -85,6 +80,8 @@ public class Viewer extends JFrame {
     private JButton closeButton;
     private JPanel teamPanel;
     private JComboBox teamComboBox;
+    private JButton addPointButton;
+    private JLabel[] teamNameLabel = new JLabel[returnTeamsLength()];
 
     public Viewer() {
         setUI();
@@ -103,26 +100,24 @@ public class Viewer extends JFrame {
 
         System.out.println(returnQuestionsLength());
         System.out.println(returnTeamsLength());
-        //this.teamLength = returnTeamsLength();
+        teamLength = returnTeamsLength();
+        teamPointsLabel = new JLabel[teamLength];
 
         this.setJMenuBar(menuBar);
         this.menuBar.add(this.fileMenu);
         this.menuBar.add(this.teamMenu);
         this.menuBar.add(this.actionMenu);
 
-        this.teamMenu.add(this.team1Menu);
+//        this.teamMenu.add(this.teamsMenu);
+//
+//        this.teamsMenu.add(this.addToTeamItem);
+//        this.teamsMenu.add(this.removeFromTeam1Item);
+//        this.teamsMenu.add(this.watchInfoTeamItem);
+//        this.teamsMenu.add(this.changeURLTeamItem);
 
-        this.team1Menu.add(this.addToTeam1Item);
-        this.team1Menu.add(this.removeFromTeam1Item);
-        this.team1Menu.add(this.watchInfoTeam1Item);
-        this.team1Menu.add(this.changeURLTeam1Item);
 
-
-        this.a2Button.addActionListener(e -> System.out.println(e.getActionCommand()));
-        this.removeFromTeam1Item.addActionListener(e -> System.out.println(e.getActionCommand()));
-        this.addToTeam1Item.addActionListener(e -> System.out.println(e.getActionCommand()));
-        this.addToTeam2Item.addActionListener(e -> System.out.println(e.getActionCommand()));
-        this.removeFromTeam2Item.addActionListener(e -> System.out.println(e.getActionCommand()));
+        this.removeFromTeamItem.addActionListener(e -> System.out.println(e.getActionCommand()));
+        this.addToTeamItem.addActionListener(e -> System.out.println(e.getActionCommand()));
 
         this.actionMenu.add(this.addSomethingMenu);
         this.addSomethingMenu.add(this.addBackgroundMenuItem);
@@ -131,10 +126,6 @@ public class Viewer extends JFrame {
         this.timeMenu.add(this.continueMenuItem);
         this.timeMenu.add(this.pauseMenuItem);
 
-        for (int i = 0; i < questionLength; i++) {
-
-            //team1Menu
-        }
 
         this.fileMenu.add(this.viewMenu);
         this.viewMenu.add(this.setToolBarInvisibleItem);
@@ -154,11 +145,14 @@ public class Viewer extends JFrame {
 
         this.teamPanel.setLayout(new GridLayout());
 
-        for (int i = 0; i < teamLength; i++) {
+        for (int i = 0; i < returnTeamsLength(); i++) {
             this.teamsPanel[i] = new JPanel();
+            this.teamNameLabel[i] = new JLabel(returnTeamName(i));
             this.teamPanel.add(this.teamsPanel[i]);
             this.teamsPanel[i].setBorder(BorderFactory.createBevelBorder(1));
-            this.teamsPanel[i].add(new JLabel("" + (i + 1)));
+            this.teamsPanel[i].add(this.teamNameLabel[i]);
+            this.teamNameLabel[i].setFont(new Font("Times New Roman", Font.PLAIN, 30));
+            this.teamNameLabel[i].setHorizontalAlignment(0);
 
             int finalI = i;
             this.teamsPanel[i].addMouseListener(new java.awt.event.MouseAdapter() {
@@ -170,12 +164,31 @@ public class Viewer extends JFrame {
                     teamsPanel[finalI].setBorder(BorderFactory.createBevelBorder(1));
                 }
             });
+
+            this.teamsMenu[i] = new JMenu(returnTeamName(i));
+            this.teamMenu.add(this.teamsMenu[i]);
+            this.teamsMenu[i].add(this.addToTeamItem);
+            this.teamsMenu[i].add(this.removeFromTeamItem);
+            this.teamsMenu[i].add(this.watchInfoTeamItem);
+            this.teamsMenu[i].add(this.changeURLTeamItem);
+
+            addToTeamItem.addActionListener(e -> teamPoints[finalI]++);
+            removeFromTeamItem.addActionListener(e -> teamPoints[finalI]--);
+
             this.teamsPanel[i].addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+                    System.out.println(finalI);
                     teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                    teamPoints[finalI]++;
+                    teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
                 }
             });
+            this.teamsPanel[i].setLayout(new GridLayout(3, 1));
+            this.teamPointsLabel[i] = new JLabel(0 + "");
+            this.teamsPanel[i].add(this.teamPointsLabel[i]);
+            this.teamPointsLabel[i].setHorizontalAlignment(0);
+            this.teamPointsLabel[i].setFont(new Font("Times New Roman", Font.BOLD, 90));
         }
 
         this.exitItem.addActionListener(e -> {
@@ -278,7 +291,6 @@ public class Viewer extends JFrame {
     }
 
 
-
     public ImageIcon returnBackgroundImage(URL url) {
         //URL url = new URL("http://komotoz.ru/gifki/images/gifki_novyj_god/elka.gif");
         backgroundLabel.setText(null);
@@ -354,6 +366,27 @@ public class Viewer extends JFrame {
             e.printStackTrace();
         }
         return length;
+    }
+
+    private String returnTeamName(int team) {
+        StringBuilder sb = new StringBuilder();
+        String name = null;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("/home/artyom/Документы/Комманды.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            JSONObject jsonObject;
+            jsonObject = jsonArray.getJSONObject(team);
+            name = jsonObject.getString("name");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return name;
     }
 
 }
