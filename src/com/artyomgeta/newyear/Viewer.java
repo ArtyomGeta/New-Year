@@ -1,5 +1,6 @@
 package com.artyomgeta.newyear;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -8,10 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
@@ -44,7 +42,7 @@ public class Viewer extends JFrame {
     private JLabel backgroundLabel;
     private JPanel backgroundPanel;
     private JButton stopButton;
-    private JComboBox musicComboBox;
+    private static final int USE_INTERNET_TO_LOAD_RESOURCES_OPTION = 0;
     private JSlider musicSlider;
     private JLabel timeLabel;
     private JTextField textField1;
@@ -54,6 +52,7 @@ public class Viewer extends JFrame {
     private JMenu teamMenu = new JMenu("Комманды");
     private JMenu actionMenu = new JMenu("Действие");
     int[] teamPoints = new int[returnTeamsLength()];
+    private JComboBox<String> musicComboBox;
     private JLabel[] teamPointsLabel;
     private JMenuItem changeURLTeamItem = new JMenuItem("Изменить ссылки");
     private JMenuItem watchInfoTeamItem = new JMenuItem("Посмотреть информацию");
@@ -73,17 +72,18 @@ public class Viewer extends JFrame {
     private JMenuItem setToolBarInvisibleItem = new JMenuItem("Скрыть меню");
     private JMenuItem setFullScreenItem = new JMenuItem("Растянуть на весь экран");
     private JMenuItem setBottomToolBarInvisible = new JMenuItem("Скрыть меню статуса");
-    private short[] team_points = {0};
     private JMenuItem exitItem = new JMenuItem("Выйти");
+    private String[] audios = new String[returnAudiosLength()];
     private int workingMinutes = 0;
     private int workingSeconds = 0;
     private JButton closeButton;
     private JPanel teamPanel;
-    private JComboBox teamComboBox;
+    private JCheckBoxMenuItem useInternetMenuButton = new JCheckBoxMenuItem("Использовать загрузку ресурсов через Интернет");
     private JButton addPointButton;
     private JLabel[] teamNameLabel = new JLabel[returnTeamsLength()];
+    private JComboBox<String> teamComboBox;
 
-    public Viewer() {
+    public Viewer() throws java.lang.NullPointerException {
         setUI();
     }
 
@@ -98,8 +98,8 @@ public class Viewer extends JFrame {
     private void setUI() {
         leftPanel.setPreferredSize(new Dimension(Toolkit.getDefaultToolkit().getScreenSize().width / 5, 20));
 
-        System.out.println(returnQuestionsLength());
-        System.out.println(returnTeamsLength());
+        //System.out.println(returnQuestionsLength());
+        //System.out.println(returnTeamsLength());
         teamLength = returnTeamsLength();
         teamPointsLabel = new JLabel[teamLength];
 
@@ -108,13 +108,21 @@ public class Viewer extends JFrame {
         this.menuBar.add(this.teamMenu);
         this.menuBar.add(this.actionMenu);
 
-//        this.teamMenu.add(this.teamsMenu);
-//
-//        this.teamsMenu.add(this.addToTeamItem);
-//        this.teamsMenu.add(this.removeFromTeam1Item);
-//        this.teamsMenu.add(this.watchInfoTeamItem);
-//        this.teamsMenu.add(this.changeURLTeamItem);
-
+        this.useInternetMenuButton.addActionListener(e -> {
+            try {
+                FileWriter fileWriter = new FileWriter(new File("settings.json"));
+                JSONArray jsonArray = new JSONArray();
+                JSONObject jsonObject = new JSONObject();
+                if (!useInternetMenuButton.isSelected())
+                    jsonObject.put("use-internet-to-load-resources", false);
+                else jsonObject.put("use-internet-to-load-resources", true);
+                jsonArray.put(jsonObject);
+                fileWriter.write(String.valueOf(jsonArray));
+                fileWriter.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
 
         this.removeFromTeamItem.addActionListener(e -> System.out.println(e.getActionCommand()));
         this.addToTeamItem.addActionListener(e -> System.out.println(e.getActionCommand()));
@@ -125,7 +133,8 @@ public class Viewer extends JFrame {
         this.actionMenu.add(this.timeMenu);
         this.timeMenu.add(this.continueMenuItem);
         this.timeMenu.add(this.pauseMenuItem);
-
+        this.actionMenu.add(this.useInternetMenuButton);
+        this.useInternetMenuButton.setSelected(returnSettings(USE_INTERNET_TO_LOAD_RESOURCES_OPTION));
 
         this.fileMenu.add(this.viewMenu);
         this.viewMenu.add(this.setToolBarInvisibleItem);
@@ -144,6 +153,7 @@ public class Viewer extends JFrame {
         });
 
         this.teamPanel.setLayout(new GridLayout());
+        DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
 
         for (int i = 0; i < returnTeamsLength(); i++) {
             this.teamsPanel[i] = new JPanel();
@@ -165,12 +175,15 @@ public class Viewer extends JFrame {
                 }
             });
 
+            defaultComboBoxModel.addElement(returnTeamName(i));
+            this.teamComboBox.setModel(defaultComboBoxModel);
+            //System.out.println(i);
             this.teamsMenu[i] = new JMenu(returnTeamName(i));
-            this.teamMenu.add(this.teamsMenu[i]);
             this.teamsMenu[i].add(this.addToTeamItem);
             this.teamsMenu[i].add(this.removeFromTeamItem);
             this.teamsMenu[i].add(this.watchInfoTeamItem);
             this.teamsMenu[i].add(this.changeURLTeamItem);
+            this.teamMenu.add(this.teamsMenu[i]);
 
             addToTeamItem.addActionListener(e -> teamPoints[finalI]++);
             removeFromTeamItem.addActionListener(e -> teamPoints[finalI]--);
@@ -178,7 +191,6 @@ public class Viewer extends JFrame {
             this.teamsPanel[i].addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    System.out.println(finalI);
                     teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.GREEN));
                     teamPoints[finalI]++;
                     teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
@@ -190,6 +202,14 @@ public class Viewer extends JFrame {
             this.teamPointsLabel[i].setHorizontalAlignment(0);
             this.teamPointsLabel[i].setFont(new Font("Times New Roman", Font.BOLD, 90));
         }
+        this.teamsMenu[0].add(this.watchInfoTeamItem);
+        this.teamsMenu[1].add(this.watchInfoTeamItem);
+
+        for (int i = 0; i < returnAudiosLength(); i++) {
+            this.audios[i] = returnAudioName(i);
+            DefaultComboBoxModel<String> defaultMusicComboBoxModel = new DefaultComboBoxModel<>(audios);
+            this.musicComboBox.setModel(defaultMusicComboBoxModel);
+        }
 
         this.exitItem.addActionListener(e -> {
             int result = JOptionPane.showConfirmDialog(this, "Вы уверены, что хотите выйти?", "Подтвердите", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -197,6 +217,9 @@ public class Viewer extends JFrame {
                 System.exit(1);
             }
         });
+
+        this.teamMenu.setEnabled(true);
+        this.actionMenu.setEnabled(true);
 
         this.setBottomToolBarInvisible.addActionListener(e -> {
             if (this.bottomToolBar.isVisible()) {
@@ -240,6 +263,7 @@ public class Viewer extends JFrame {
             }
             this.fullBackgroundButton.setEnabled(true);
         });
+
 
         this.fullBackgroundButton.addActionListener(e -> {
             try {
@@ -324,9 +348,8 @@ public class Viewer extends JFrame {
 
     private String returnCurrentAudio(String current) {
         String returnable = null;
-        if ("Тестовая музыка".equals(current)) {
-            returnable = "/home/artyom/Загрузки/audio.wav";
-        }
+        if (current.equals("Ariana Grande - Last Christmas"))
+            returnable = "audio/Ariana.wav";
         return returnable;
     }
 
@@ -334,7 +357,26 @@ public class Viewer extends JFrame {
         StringBuilder sb = new StringBuilder();
         int length = 0;
         try {
-            BufferedReader br = new BufferedReader(new FileReader("/home/artyom/Документы/Вопросы.json"));
+            BufferedReader br = new BufferedReader(new FileReader("Questions.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            length = jsonArray.length();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return length;
+    }
+
+    private int returnAudiosLength() {
+        StringBuilder sb = new StringBuilder();
+        int length = 0;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("Audios.json"));
             String line = br.readLine();
             while (line != null) {
                 sb.append(line);
@@ -353,7 +395,7 @@ public class Viewer extends JFrame {
         StringBuilder sb = new StringBuilder();
         int length = 0;
         try {
-            BufferedReader br = new BufferedReader(new FileReader("/home/artyom/Документы/Комманды.json"));
+            BufferedReader br = new BufferedReader(new FileReader("Teams.json"));
             String line = br.readLine();
             while (line != null) {
                 sb.append(line);
@@ -364,6 +406,8 @@ public class Viewer extends JFrame {
             length = jsonArray.length();
         } catch (IOException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
         return length;
     }
@@ -371,8 +415,16 @@ public class Viewer extends JFrame {
     private String returnTeamName(int team) {
         StringBuilder sb = new StringBuilder();
         String name = null;
+        if (returnSettings(USE_INTERNET_TO_LOAD_RESOURCES_OPTION)) {
+            try {
+                FileUtils.copyURLToFile(new URL("https://artyomgeta.github.io/New-Year/Teams.json"), new File("Teams.json"));
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
         try {
-            BufferedReader br = new BufferedReader(new FileReader("/home/artyom/Документы/Комманды.json"));
+            BufferedReader br = new BufferedReader(new FileReader("Teams.json"));
             String line = br.readLine();
             while (line != null) {
                 sb.append(line);
@@ -385,8 +437,75 @@ public class Viewer extends JFrame {
             name = jsonObject.getString("name");
         } catch (IOException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
         return name;
+    }
+
+    private String returnAudioName(int audio) {
+        StringBuilder sb = new StringBuilder();
+        String name = null;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("Audios.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            JSONObject jsonObject;
+            jsonObject = jsonArray.getJSONObject(audio);
+            name = jsonObject.getString("name");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return name;
+    }
+
+    private String returnAudioSource(int audio) {
+        StringBuilder sb = new StringBuilder();
+        String name = null;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("Audios.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            JSONObject jsonObject;
+            jsonObject = jsonArray.getJSONObject(audio);
+            name = jsonObject.getString("src");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return name;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private boolean returnSettings(int option) {
+        StringBuilder sb = new StringBuilder();
+        boolean returnable = false;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("settings.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            JSONObject jsonObject;
+            if (option == USE_INTERNET_TO_LOAD_RESOURCES_OPTION) {
+                jsonObject = jsonArray.getJSONObject(0);
+                returnable = jsonObject.getBoolean("use-internet-to-load-resources");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return returnable;
     }
 
 }

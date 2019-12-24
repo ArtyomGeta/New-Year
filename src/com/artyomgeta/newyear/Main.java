@@ -3,7 +3,7 @@ package com.artyomgeta.newyear;
 import javax.swing.*;
 import java.awt.*;
 
-public class Main {
+public abstract class Main {
 
     public static Icon resizeIcon(ImageIcon icon, int resizedWidth, int resizedHeight) {
         Image img = icon.getImage();
@@ -17,7 +17,10 @@ public class Main {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-
-        new Viewer().run();
+        try {
+            new Viewer().run();
+        } catch (java.lang.NullPointerException ex) {
+            JOptionPane.showMessageDialog(null, "Не удалось загрузить один из файлов. Попробуйте ещё раз.", "Ошибка", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
