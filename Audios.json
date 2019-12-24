@@ -1,10 +1,26 @@
 [
   {
     "name": "Ariana Grande - Last Christmas",
-    "src": "audio/Ariana.wav"
+    "src": "https://github.com/ArtyomGeta/New-Year/blob/master/audio/Ariana.wav"
   },
   {
     "name": "Bobby Helms - Jingle Bell Rock",
-    "src": "audio/Bobby.wav"
+    "src": "https://github.com/ArtyomGeta/New-Year/blob/master/audio/Bobby.wav"
+  },
+  {
+    "name": "Abba - Happy New Year",
+    "src": "https://github.com/ArtyomGeta/New-Year/blob/master/audio/Abba.wav"
+  },
+  {
+    "name": "Мои ручки хороши, а у соседа лучше",
+    "src": "https://github.com/ArtyomGeta/New-Year/blob/master/audio/Hands.wav"
+  },
+  {
+    "name": "Old Santa",
+    "src": "https://github.com/ArtyomGeta/New-Year/blob/master/audio/Santa.wav"
+  },
+  {
+    "name": "Andy Williams — Winter Wonderland",
+    "src": "https://github.com/ArtyomGeta/New-Year/blob/master/audio/Williams.wav"
   }
 ]

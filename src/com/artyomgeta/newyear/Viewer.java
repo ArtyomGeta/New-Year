@@ -12,7 +12,6 @@ import java.awt.event.MouseEvent;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -83,8 +82,11 @@ public class Viewer extends JFrame {
     private JLabel[] teamNameLabel = new JLabel[returnTeamsLength()];
     private JComboBox<String> teamComboBox;
 
+    private String nowIsPlayingAudioName = null;
+
     public Viewer() throws java.lang.NullPointerException {
         setUI();
+        bufferAudios();
     }
 
     public void run() {
@@ -277,15 +279,29 @@ public class Viewer extends JFrame {
         this.playButton.addActionListener(e -> {
             if (clip[0] == null) {
                 try {
-                    audioIn[0] = AudioSystem.getAudioInputStream(new File(returnCurrentAudio((String) Objects.requireNonNull(musicComboBox.getSelectedItem()))));
+                    audioIn[0] = AudioSystem.getAudioInputStream(new File("audio/" + returnCurrentAudio((String) musicComboBox.getSelectedItem()) + ".wav"));
                     clip[0] = AudioSystem.getClip();
                     clip[0].open(audioIn[0]);
                     clip[0].start();
                     this.stopButton.setEnabled(true);
-                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
-                    ex.printStackTrace();
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | NullPointerException ex) {
+                    try {
+                        FileUtils.copyURLToFile(new URL(returnAudioSource(musicComboBox.getSelectedIndex())), new File("audio/" + musicComboBox.getSelectedItem()));
+                    } catch (IOException exe) {
+                        try {
+                            audioIn[0] = AudioSystem.getAudioInputStream(new File("audios/" + musicComboBox.getSelectedItem()));
+                            clip[0] = AudioSystem.getClip();
+                            clip[0].open(audioIn[0]);
+                            clip[0].start();
+                            this.stopButton.setEnabled(true);
+                        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException exc) {
+                            exc.printStackTrace();
+                        }
+                        exe.printStackTrace();
+                    }
                 }
-            } else {
+                nowIsPlayingAudioName = (String) musicComboBox.getSelectedItem();
+            } else if (nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && !clip[0].isRunning()) {
                 if (clip[0].isRunning()) {
                     timeMusic.set(clip[0].getMicrosecondPosition());
                     clip[0].stop();
@@ -295,8 +311,17 @@ public class Viewer extends JFrame {
                     clip[0].start();
                     this.stopButton.setEnabled(true);
                 }
+            } else if (!nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && clip[0].isRunning()) {
+                clip[0].stop();
+                clip[0].close();
+                try {
+                    audioIn[0] = AudioSystem.getAudioInputStream(new File("audio/" + returnCurrentAudio((String) musicComboBox.getSelectedItem()) + ".wav"));
+                    clip[0].open(audioIn[0]);
+                    clip[0].start();
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();
+                }
             }
-            clip[0].addLineListener(event -> updateState());
         });
 
         this.stopButton.addActionListener(e -> {
@@ -347,10 +372,39 @@ public class Viewer extends JFrame {
 
 
     private String returnCurrentAudio(String current) {
+        StringBuilder sb = new StringBuilder();
         String returnable = null;
-        if (current.equals("Ariana Grande - Last Christmas"))
-            returnable = "audio/Ariana.wav";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("Audios.json"));
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            br.close();
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            for (int i = 0; i < jsonArray.length(); i++) {
+                if (jsonArray.getJSONObject(i).getString("name").equals(musicComboBox.getSelectedItem())) {
+                    return jsonArray.getJSONObject(i).getString("name");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return returnable;
+    }
+
+    private void bufferAudios() {
+        System.out.println("Buffering started:");
+        for (int i = 0; i < returnAudiosLength(); i++) {
+            try {
+                FileUtils.copyURLToFile(new URL(returnAudioSource(i)), new File("audios/" + returnAudioName(i) + ".wav"));
+                System.out.println(returnAudioSource(i) + " to " + new File("audios/" + returnAudioName(i)).getAbsolutePath() + ".wav");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Buffering completed successful!");
     }
 
     private int returnQuestionsLength() {
@@ -465,7 +519,7 @@ public class Viewer extends JFrame {
 
     private String returnAudioSource(int audio) {
         StringBuilder sb = new StringBuilder();
-        String name = null;
+        String sourse = null;
         try {
             BufferedReader br = new BufferedReader(new FileReader("Audios.json"));
             String line = br.readLine();
@@ -477,11 +531,11 @@ public class Viewer extends JFrame {
             JSONArray jsonArray = new JSONArray(sb.toString());
             JSONObject jsonObject;
             jsonObject = jsonArray.getJSONObject(audio);
-            name = jsonObject.getString("src");
+            sourse = jsonObject.getString("src");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return name;
+        return sourse;
     }
 
     @SuppressWarnings("SameParameterValue")
