@@ -15,6 +15,8 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static javax.swing.JOptionPane.*;
+
 
 @SuppressWarnings({"unused", "rawtypes", "NonAsciiCharacters", "DuplicatedCode"})
 public class Viewer extends JFrame {
@@ -158,7 +160,8 @@ public class Viewer extends JFrame {
             this.teamPanel.add(this.teamsPanel[i]);
             this.teamsPanel[i].setBorder(BorderFactory.createBevelBorder(1));
             this.teamsPanel[i].add(this.teamNameLabel[i]);
-            this.teamNameLabel[i].setFont(new Font("Times New Roman", Font.PLAIN, 30));
+            this.teamNameLabel[i].setFont(new Font(this.teamNameLabel[i].getFont().getName(), Font.PLAIN, 30));
+
             this.teamNameLabel[i].setHorizontalAlignment(0);
 
             this.addToTeamItem[i] = new JMenuItem("Добавить балл");
@@ -174,6 +177,7 @@ public class Viewer extends JFrame {
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     teamsPanel[finalI].setBorder(BorderFactory.createBevelBorder(1));
                 }
+
             });
 
             this.removeFromTeamItem[i].addActionListener(e -> {
@@ -198,16 +202,34 @@ public class Viewer extends JFrame {
             this.teamsPanel[i].addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.GREEN));
-                    teamPoints[finalI]++;
-                    teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.GREEN));
+                        teamPoints[finalI]++;
+                        teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
+                    } else if (e.getButton() == MouseEvent.BUTTON3) {
+                        if (teamPoints[finalI] > 0) {
+                            teamsPanel[finalI].setBorder(BorderFactory.createLineBorder(Color.RED));
+                            teamPoints[finalI]--;
+                            teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
+                        }
+                    } else if (e.getButton() == MouseEvent.BUTTON2) {
+                        String resultString = showInputDialog(null, "Введите число для добавлнеия", "Ввод", QUESTION_MESSAGE);
+                        int result = 0;
+                        try {
+                            result = Integer.parseInt(resultString);
+                        } catch (NumberFormatException ex) {
+                            showMessageDialog(null, "Введите число!", "Ошибка", ERROR_MESSAGE);
+                        }
+                        teamPoints[finalI] += result;
+                        teamPointsLabel[finalI].setText(teamPoints[finalI] + "");
+                    }
                 }
             });
             this.teamsPanel[i].setLayout(new GridLayout(3, 1));
             this.teamPointsLabel[i] = new JLabel(0 + "");
             this.teamsPanel[i].add(this.teamPointsLabel[i]);
             this.teamPointsLabel[i].setHorizontalAlignment(0);
-            this.teamPointsLabel[i].setFont(new Font("Times New Roman", Font.BOLD, 90));
+            this.teamPointsLabel[i].setFont(new Font(this.teamPointsLabel[i].getFont().getName(), Font.BOLD, 120));
         }
 
         for (int i = 0; i < returnAudiosLength(); i++) {
@@ -217,8 +239,8 @@ public class Viewer extends JFrame {
         }
 
         this.exitItem.addActionListener(e -> {
-            int result = JOptionPane.showConfirmDialog(this, "Вы уверены, что хотите выйти?", "Подтвердите", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (result == JOptionPane.YES_NO_OPTION) {
+            int result = showConfirmDialog(this, "Вы уверены, что хотите выйти?", "Подтвердите", YES_NO_OPTION, QUESTION_MESSAGE);
+            if (result == YES_NO_OPTION) {
                 System.exit(1);
             }
         });
@@ -241,7 +263,6 @@ public class Viewer extends JFrame {
                 this.dispose();
                 this.setUndecorated(true);
                 this.setVisible(true);
-                this.closeToolBar.setVisible(true);
                 this.setFullScreenItem.setText("Свернуть");
             } else {
                 this.dispose();
@@ -337,7 +358,7 @@ public class Viewer extends JFrame {
                 // Была пауза. Продолжаем играть.
                 timeMusic.set(clip[0].getMicrosecondPosition());
                 clip[0].start();
-                this.stopButton.setEnabled(false);
+                this.stopButton.setEnabled(true);
             } else if (!nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && clip[0].isRunning()) {
                 // Что-то играло. Включаем другое.
                 clip[0].stop();
@@ -364,6 +385,7 @@ public class Viewer extends JFrame {
                     clip[0].open(audioIn[0]);
                     clip[0].start();
                     nowIsPlayingAudioName = (String) musicComboBox.getSelectedItem();
+                    stopButton.setEnabled(true);
                 } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
                     ex.printStackTrace();
                 }
@@ -371,9 +393,15 @@ public class Viewer extends JFrame {
         });
 
         this.stopButton.addActionListener(e -> {
+            try {
+                audioIn[0].close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             clip[0].stop();
             timeMusic.set(0);
-            clip[0].setMicrosecondPosition(timeMusic.get());
+            clip[0].close();
+            clip[0].setMicrosecondPosition(0);
             this.stopButton.setEnabled(false);
         });
 
@@ -515,7 +543,7 @@ public class Viewer extends JFrame {
             length = jsonArray.length();
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", ERROR_MESSAGE);
             System.exit(0);
         }
         return length;
@@ -528,7 +556,7 @@ public class Viewer extends JFrame {
             try {
                 FileUtils.copyURLToFile(new URL("https://artyomgeta.github.io/New-Year/Teams.json"), new File("Teams.json"));
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", ERROR_MESSAGE);
                 e.printStackTrace();
             }
         }
@@ -546,7 +574,7 @@ public class Viewer extends JFrame {
             name = jsonObject.getString("name");
         } catch (IOException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            showMessageDialog(this, "Не найден файл Teams.json", "Ошибка", ERROR_MESSAGE);
         }
         return name;
     }
