@@ -76,28 +76,6 @@
                       </component>
                     </children>
                   </grid>
-                  <grid id="1700d" layout-manager="BorderLayout" hgap="0" vgap="0">
-                    <constraints>
-                      <tabbedpane title="Хронология"/>
-                    </constraints>
-                    <properties/>
-                    <border type="bevel-lowered"/>
-                    <children>
-                      <scrollpane id="5d352">
-                        <constraints border-constraint="Center"/>
-                        <properties/>
-                        <border type="none"/>
-                        <children>
-                          <component id="81a5b" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
-                            <constraints/>
-                            <properties>
-                              <editable value="false"/>
-                            </properties>
-                          </component>
-                        </children>
-                      </scrollpane>
-                    </children>
-                  </grid>
                 </children>
               </tabbedpane>
             </children>
@@ -161,11 +139,11 @@
               <visible value="false"/>
             </properties>
           </component>
-          <component id="1572" class="javax.swing.JToolBar$Separator">
+          <component id="1572" class="javax.swing.JToolBar$Separator" binding="separator1">
             <constraints/>
             <properties/>
           </component>
-          <component id="c12c1" class="javax.swing.JLabel">
+          <component id="c12c1" class="javax.swing.JLabel" binding="backgroundToolBarLabel">
             <constraints/>
             <properties>
               <text value="Фон: "/>
@@ -184,7 +162,7 @@
               <text value="■"/>
             </properties>
           </component>
-          <component id="4fe77" class="javax.swing.JComboBox" binding="comboBox2" default-binding="true">
+          <component id="4fe77" class="javax.swing.JComboBox" binding="backbroundComboBox">
             <constraints/>
             <properties>
               <model>
@@ -193,11 +171,11 @@
               </model>
             </properties>
           </component>
-          <component id="1e379" class="javax.swing.JToolBar$Separator">
+          <component id="1e379" class="javax.swing.JToolBar$Separator" binding="separator2">
             <constraints/>
             <properties/>
           </component>
-          <component id="4243d" class="javax.swing.JLabel">
+          <component id="4243d" class="javax.swing.JLabel" binding="teamsToolBarLabel">
             <constraints/>
             <properties>
               <text value="Управление коммандами: "/>
@@ -213,30 +191,12 @@
             <constraints/>
             <properties/>
           </component>
-          <component id="e461f" class="javax.swing.JButton" binding="следующийВопросButton" default-binding="true">
+          <component id="e461f" class="javax.swing.JButton" binding="nextQuestionButton">
             <constraints/>
             <properties>
               <text value="→"/>
             </properties>
           </component>
-          <toolbar id="c140e" binding="closeToolBar">
-            <constraints/>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <component id="51d80" class="javax.swing.JButton" binding="closeButton" default-binding="true">
-                <constraints/>
-                <properties>
-                  <horizontalAlignment value="0"/>
-                  <horizontalTextPosition value="4"/>
-                  <text value="Закрыть"/>
-                  <verticalAlignment value="0"/>
-                  <verticalTextPosition value="0"/>
-                  <visible value="false"/>
-                </properties>
-              </component>
-            </children>
-          </toolbar>
         </children>
       </toolbar>
       <toolbar id="e8853" binding="bottomToolBar">

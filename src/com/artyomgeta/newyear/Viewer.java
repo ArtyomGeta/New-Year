@@ -30,12 +30,11 @@ public class Viewer extends JFrame {
     private JTabbedPane tabbedPane1;
     AtomicLong timeMusic = new AtomicLong();
     private JButton setBackgroundButton;
-    private JComboBox comboBox2;
+    private JComboBox backbroundComboBox;
     private JButton a1Button;
-    private JButton следующийВопросButton;
+    private JButton nextQuestionButton;
     private JTextField textField2;
     private JButton показатьButton;
-    private JTextArea textArea1;
     private JButton fullBackgroundButton;
     int teamLength = returnTeamsLength();
     private JLabel backgroundLabel;
@@ -48,18 +47,16 @@ public class Viewer extends JFrame {
     private JToolBar mainToolBar;
     private JMenuBar menuBar = new JMenuBar();
     private JMenu fileMenu = new JMenu("Файл");
-    private JMenu teamMenu = new JMenu("Комманды");
+    private JMenu teamMenu = new JMenu("Команды");
     private JMenu actionMenu = new JMenu("Действие");
     int[] teamPoints = new int[returnTeamsLength()];
     private JComboBox<String> musicComboBox;
     private JLabel[] teamPointsLabel;
-    private JMenuItem changeURLTeamItem = new JMenuItem("Изменить ссылки");
-    private JMenuItem watchInfoTeamItem = new JMenuItem("Посмотреть информацию");
-    private JMenu addSomethingMenu = new JMenu("Добавить ресурс...");
+    private JMenuItem[] watchInfoTeamItem = new JMenuItem[returnTeamsLength()];
     private JMenuItem addBackgroundMenuItem = new JMenuItem("Добавить фон");
-    private JMenuItem addToTeamItem = new JMenuItem("Добавить балл");
+    private JMenuItem[] addToTeamItem = new JMenuItem[returnTeamsLength()];
     int questionLength = returnQuestionsLength();
-    private JMenuItem removeFromTeamItem = new JMenuItem("Удалить балл");
+    private JMenuItem[] removeFromTeamItem = new JMenuItem[returnTeamsLength()];
     private JMenu[] teamsMenu = new JMenu[returnTeamsLength()];
     private JToolBar closeToolBar;
     private JToolBar bottomToolBar;
@@ -75,18 +72,21 @@ public class Viewer extends JFrame {
     private String[] audios = new String[returnAudiosLength()];
     private int workingMinutes = 0;
     private int workingSeconds = 0;
-    private JButton closeButton;
     private JPanel teamPanel;
     private JCheckBoxMenuItem useInternetMenuButton = new JCheckBoxMenuItem("Использовать загрузку ресурсов через Интернет");
     private JButton addPointButton;
     private JLabel[] teamNameLabel = new JLabel[returnTeamsLength()];
     private JComboBox<String> teamComboBox;
+    private JToolBar.Separator separator1;
+    private JToolBar.Separator separator2;
+    private JLabel backgroundToolBarLabel;
+    private JLabel teamsToolBarLabel;
 
     private String nowIsPlayingAudioName = null;
 
     public Viewer() throws java.lang.NullPointerException {
         setUI();
-        bufferAudios();
+        bufferFiles();
     }
 
     public void run() {
@@ -126,11 +126,6 @@ public class Viewer extends JFrame {
             }
         });
 
-        this.removeFromTeamItem.addActionListener(e -> System.out.println(e.getActionCommand()));
-        this.addToTeamItem.addActionListener(e -> System.out.println(e.getActionCommand()));
-
-        this.actionMenu.add(this.addSomethingMenu);
-        this.addSomethingMenu.add(this.addBackgroundMenuItem);
 
         this.actionMenu.add(this.timeMenu);
         this.timeMenu.add(this.continueMenuItem);
@@ -166,6 +161,10 @@ public class Viewer extends JFrame {
             this.teamNameLabel[i].setFont(new Font("Times New Roman", Font.PLAIN, 30));
             this.teamNameLabel[i].setHorizontalAlignment(0);
 
+            this.addToTeamItem[i] = new JMenuItem("Добавить балл");
+            this.removeFromTeamItem[i] = new JMenuItem("Удалить балл");
+            this.watchInfoTeamItem[i] = new JMenuItem("Посмотреть информацию о команде");
+
             int finalI = i;
             this.teamsPanel[i].addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -177,18 +176,24 @@ public class Viewer extends JFrame {
                 }
             });
 
+            this.removeFromTeamItem[i].addActionListener(e -> {
+                teamPoints[finalI]--;
+                teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
+            });
+            this.addToTeamItem[i].addActionListener(e -> {
+                teamPoints[finalI]++;
+                teamPointsLabel[finalI].setText("" + teamPoints[finalI]);
+            });
+
             defaultComboBoxModel.addElement(returnTeamName(i));
             this.teamComboBox.setModel(defaultComboBoxModel);
             //System.out.println(i);
             this.teamsMenu[i] = new JMenu(returnTeamName(i));
-            this.teamsMenu[i].add(this.addToTeamItem);
-            this.teamsMenu[i].add(this.removeFromTeamItem);
-            this.teamsMenu[i].add(this.watchInfoTeamItem);
-            this.teamsMenu[i].add(this.changeURLTeamItem);
+            this.teamsMenu[i].add(this.addToTeamItem[i]);
+            this.teamsMenu[i].add(this.removeFromTeamItem[i]);
+            this.teamsMenu[i].add(this.watchInfoTeamItem[i]);
             this.teamMenu.add(this.teamsMenu[i]);
 
-            addToTeamItem.addActionListener(e -> teamPoints[finalI]++);
-            removeFromTeamItem.addActionListener(e -> teamPoints[finalI]--);
 
             this.teamsPanel[i].addMouseListener(new MouseAdapter() {
                 @Override
@@ -204,8 +209,6 @@ public class Viewer extends JFrame {
             this.teamPointsLabel[i].setHorizontalAlignment(0);
             this.teamPointsLabel[i].setFont(new Font("Times New Roman", Font.BOLD, 90));
         }
-        this.teamsMenu[0].add(this.watchInfoTeamItem);
-        this.teamsMenu[1].add(this.watchInfoTeamItem);
 
         for (int i = 0; i < returnAudiosLength(); i++) {
             this.audios[i] = returnAudioName(i);
@@ -276,8 +279,37 @@ public class Viewer extends JFrame {
         });
 
 
+        this.tabbedPane1.addChangeListener(e -> {
+            if (tabbedPane1.getSelectedIndex() == 0) {
+                this.separator1.setVisible(false);
+                this.backgroundToolBarLabel.setVisible(false);
+                this.setBackgroundButton.setVisible(false);
+                this.fullBackgroundButton.setVisible(false);
+                this.backbroundComboBox.setVisible(false);
+
+                this.separator2.setVisible(true);
+                this.teamsToolBarLabel.setVisible(true);
+                this.addPointButton.setVisible(true);
+                this.teamComboBox.setVisible(true);
+                this.nextQuestionButton.setVisible(true);
+            } else {
+                this.separator1.setVisible(true);
+                this.backgroundToolBarLabel.setVisible(true);
+                this.setBackgroundButton.setVisible(true);
+                this.fullBackgroundButton.setVisible(true);
+                this.backbroundComboBox.setVisible(true);
+
+                this.separator2.setVisible(false);
+                this.teamsToolBarLabel.setVisible(false);
+                this.addPointButton.setVisible(false);
+                this.teamComboBox.setVisible(false);
+                this.nextQuestionButton.setVisible(false);
+            }
+        });
+
         this.playButton.addActionListener(e -> {
             if (clip[0] == null) {
+                // Первый раз запускаем музыку.
                 try {
                     audioIn[0] = AudioSystem.getAudioInputStream(new File("audio/" + returnCurrentAudio((String) musicComboBox.getSelectedItem()) + ".wav"));
                     clip[0] = AudioSystem.getClip();
@@ -289,7 +321,7 @@ public class Viewer extends JFrame {
                         FileUtils.copyURLToFile(new URL(returnAudioSource(musicComboBox.getSelectedIndex())), new File("audio/" + musicComboBox.getSelectedItem()));
                     } catch (IOException exe) {
                         try {
-                            audioIn[0] = AudioSystem.getAudioInputStream(new File("audios/" + musicComboBox.getSelectedItem()));
+                            audioIn[0] = AudioSystem.getAudioInputStream(new File("audio/" + musicComboBox.getSelectedItem()));
                             clip[0] = AudioSystem.getClip();
                             clip[0].open(audioIn[0]);
                             clip[0].start();
@@ -302,22 +334,36 @@ public class Viewer extends JFrame {
                 }
                 nowIsPlayingAudioName = (String) musicComboBox.getSelectedItem();
             } else if (nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && !clip[0].isRunning()) {
-                if (clip[0].isRunning()) {
-                    timeMusic.set(clip[0].getMicrosecondPosition());
-                    clip[0].stop();
-                    this.stopButton.setEnabled(false);
-                } else {
-                    clip[0].setMicrosecondPosition(timeMusic.get());
-                    clip[0].start();
-                    this.stopButton.setEnabled(true);
-                }
+                // Была пауза. Продолжаем играть.
+                timeMusic.set(clip[0].getMicrosecondPosition());
+                clip[0].start();
+                this.stopButton.setEnabled(false);
             } else if (!nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && clip[0].isRunning()) {
+                // Что-то играло. Включаем другое.
                 clip[0].stop();
                 clip[0].close();
                 try {
                     audioIn[0] = AudioSystem.getAudioInputStream(new File("audio/" + returnCurrentAudio((String) musicComboBox.getSelectedItem()) + ".wav"));
                     clip[0].open(audioIn[0]);
                     clip[0].start();
+                } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+                    ex.printStackTrace();
+                }
+                nowIsPlayingAudioName = (String) musicComboBox.getSelectedItem();
+                stopButton.setEnabled(true);
+            } else if (nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && clip[0].isRunning()) {
+                // Ставим на паузу.
+                timeMusic.set(clip[0].getMicrosecondPosition());
+                clip[0].stop();
+                stopButton.setEnabled(false);
+            } else if (!nowIsPlayingAudioName.equals(musicComboBox.getSelectedItem()) && !clip[0].isRunning()) {
+                // Стояла на паузе. Мы включили другое.
+                try {
+                    clip[0].close();
+                    audioIn[0] = AudioSystem.getAudioInputStream(new File("audio/" + returnCurrentAudio((String) musicComboBox.getSelectedItem()) + ".wav"));
+                    clip[0].open(audioIn[0]);
+                    clip[0].start();
+                    nowIsPlayingAudioName = (String) musicComboBox.getSelectedItem();
                 } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
                     ex.printStackTrace();
                 }
@@ -363,10 +409,17 @@ public class Viewer extends JFrame {
     }
 
     public ImageIcon returnBackgroundGIF(URL url) {
-        backgroundLabel.setText(null);
-        ImageIcon imageIcon = new ImageIcon(url);
-        imageIcon.setImage(imageIcon.getImage().getScaledInstance(backgroundLabel.getParent().getWidth(), backgroundLabel.getParent().getHeight(), Image.SCALE_DEFAULT));
-
+        ImageIcon imageIcon;
+        if (returnSettings(USE_INTERNET_TO_LOAD_RESOURCES_OPTION)) {
+            backgroundLabel.setText(null);
+            imageIcon = new ImageIcon(url);
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(backgroundLabel.getParent().getWidth(), backgroundLabel.getParent().getHeight(), Image.SCALE_DEFAULT));
+            return imageIcon;
+        } else {
+            imageIcon = new ImageIcon(String.valueOf(new File("background/elka.gif")));
+            imageIcon.setImage(imageIcon.getImage().getScaledInstance(backgroundLabel.getParent().getWidth(), backgroundLabel.getParent().getHeight(), Image.SCALE_DEFAULT));
+            backgroundLabel.setText(null);
+        }
         return imageIcon;
     }
 
@@ -394,17 +447,19 @@ public class Viewer extends JFrame {
         return returnable;
     }
 
-    private void bufferAudios() {
-        System.out.println("Buffering started:");
-        for (int i = 0; i < returnAudiosLength(); i++) {
-            try {
-                FileUtils.copyURLToFile(new URL(returnAudioSource(i)), new File("audios/" + returnAudioName(i) + ".wav"));
-                System.out.println(returnAudioSource(i) + " to " + new File("audios/" + returnAudioName(i)).getAbsolutePath() + ".wav");
-            } catch (IOException e) {
-                e.printStackTrace();
+    private void bufferFiles() {
+        if (returnSettings(USE_INTERNET_TO_LOAD_RESOURCES_OPTION)) {
+            System.out.println("Buffering started:");
+            for (int i = 0; i < returnAudiosLength(); i++) {
+                try {
+                    FileUtils.copyURLToFile(new URL(returnAudioSource(i)), new File("audio/" + returnAudioName(i) + ".wav"));
+                    System.out.println(returnAudioSource(i) + " to " + new File("audio/" + returnAudioName(i)).getAbsolutePath() + ".wav");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+            System.out.println("Buffering completed successful!");
         }
-        System.out.println("Buffering completed successful!");
     }
 
     private int returnQuestionsLength() {
